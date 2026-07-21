@@ -72,6 +72,16 @@ function createApp() {
           return;
         }
 
+        // In development, accept any localhost/127.0.0.1 origin regardless of
+        // port. Vite picks the next free port (5173, 5174, 5175...) whenever
+        // something else is already bound to the one before it, and a
+        // developer has no reason to expect that to require an env-file edit.
+        // Production stays strict: only CLIENT_ORIGIN and *.vercel.app match.
+        if (!env.isProduction && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+          callback(null, true);
+          return;
+        }
+
         // Vercel preview deployments get a generated subdomain per branch, so
         // an exact-match allowlist would break every preview build.
         if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin)) {

@@ -92,7 +92,13 @@ const SCHEMA = {
 
   CLIENT_ORIGIN: {
     required: false,
-    fallback: 'http://localhost:5173',
+    // Fallbacks bypass `parse` (see loadEnv below), so this must already be
+    // in the shape `parse` would produce - an array, not the raw string. A
+    // string fallback here previously worked only by accident, because
+    // Array.prototype.indexOf and String.prototype.indexOf both exist and a
+    // substring search of a single-origin string happens to agree with an
+    // array membership check for an exact match.
+    fallback: ['http://localhost:5173'],
     parse: function (raw) {
       return raw
         .split(',')

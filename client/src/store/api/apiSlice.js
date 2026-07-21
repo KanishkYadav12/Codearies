@@ -28,10 +28,17 @@ import { TOKEN_STORAGE_KEY } from '../../constants';
  * the counters — so it invalidates all three, and nothing else.
  */
 
+// Strips any trailing slash(es) so a VITE_API_URL set to either
+// "https://api.example.com" or "https://api.example.com/" produces the same
+// base URL - a trailing slash otherwise doubles up with the leading slash on
+// "/api" below and 404s every request (the extra slash isn't collapsed by
+// Express's router).
+const API_ROOT = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
 const rawBaseQuery = fetchBaseQuery({
   // Empty in development: vite proxies /api to the API server, so a relative
   // URL keeps everything same-origin.
-  baseUrl: `${import.meta.env.VITE_API_URL || ''}/api`,
+  baseUrl: `${API_ROOT}/api`,
 
   // Send the httpOnly session cookie. The Bearer header below is the primary
   // mechanism; the cookie is the fallback that survives a hard refresh.
