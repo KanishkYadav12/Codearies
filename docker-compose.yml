@@ -1,0 +1,67 @@
+# ---------------------------------------------------------------------------
+# Local development / self-hosted stack.
+#
+# Mirrors production's three services (frontend, backend, database) so
+# `docker compose up` reproduces the deployed topology exactly, with nginx
+# fulfilling the same reverse-proxy role it plays conceptually in front of
+# Render/Railway.
+#
+# Usage:
+#   cp server/.env.example server/.env   # fill in JWT_SECRET at minimum
+#   docker compose up --build
+#   -> http://localhost:8080        the app
+#   -> http://localhost:8080/api/health   backend health check
+# ---------------------------------------------------------------------------
+
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - devdrops_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      # Overrides whatever MONGODB_URI is in .env — inside compose's network,
+      # the database is reachable by service name, not localhost.
+      MONGODB_URI: mongodb://mongodb:27017
+      CLIENT_ORIGIN: http://localhost:8080
+      PUBLIC_APP_URL: http://localhost:8080
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:5000/api/health', r => process.exit(r.statusCode===200?0:1)).on('error', () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./client
+      args:
+        # Empty on purpose: nginx.conf proxies /api/* to the backend service,
+        # so the browser only ever talks to this one origin.
+        VITE_API_URL: ''
+    restart: unless-stopped
+    ports:
+      - '8080:80'
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  devdrops_mongo_data:
