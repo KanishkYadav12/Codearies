@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <meta
+      name="description"
+      content="DevDrops - capture, organise and recall developer knowledge with Fibonacci spaced repetition."
+    />
+    <meta name="theme-color" content="#0d1220" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <title>DevDrops</title>
+
+    <script>
+      /**
+       * Apply the stored theme before first paint.
+       *
+       * React mounts a frame or two after the document parses; without this the
+       * page renders in the default theme and then snaps to the user's choice,
+       * which reads as a flash of the wrong colour scheme. Inline and
+       * synchronous is the only way to beat that.
+       */
+      (function () {
+        try {
+          var stored = localStorage.getItem('devdrops:theme');
+          var theme = stored ? JSON.parse(stored) : null;
+
+          if (theme !== 'light' && theme !== 'dark') {
+            theme = window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark';
+          }
+
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.style.colorScheme = theme;
+        } catch (error) {
+          // Private-mode browsers can throw on localStorage; the default class
+          // on <html> already gives us a usable theme.
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

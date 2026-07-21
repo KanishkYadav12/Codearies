@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Global styles.
+ *
+ * Frontend constraint #4: no animation library — every transition and
+ * keyframe in this app is declared here or in tailwind.config.js. This file
+ * also carries the few things Tailwind's utility classes cannot express:
+ * scrollbar theming, focus rings, and the code-block scroll container.
+ */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-slate-50 text-ink-900 antialiased;
+    @apply dark:bg-ink-950 dark:text-slate-100;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* A single, consistent focus ring everywhere — required for keyboard
+     navigation (spec: "Accessibility - proper ARIA labels, keyboard
+     navigation, focus management"). Mouse users never see it, via :focus-visible. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-drop-500 ring-offset-2 ring-offset-slate-50 dark:ring-offset-ink-950;
+  }
+
+  ::selection {
+    @apply bg-drop-500/30;
+  }
+
+  /* Thin, theme-aware scrollbars. Firefox via the standard property, WebKit
+     via pseudo-elements — Tailwind has no first-class scrollbar utilities. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.ink.600') transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ink-600/60 dark:bg-ink-600;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-500;
+  }
+}
+
+@layer components {
+  /* Card surface used across dashboard tiles, drop cards and modals. */
+  .surface {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-card;
+    @apply dark:border-ink-700 dark:bg-ink-900;
+  }
+
+  .surface-interactive {
+    @apply surface transition-all duration-200 ease-out;
+    @apply hover:-translate-y-0.5 hover:shadow-lifted hover:border-drop-400/40;
+  }
+
+  /* Base for every button; variants layer on top via Button.jsx. */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5;
+    @apply text-sm font-medium transition-all duration-150 ease-out;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    @apply active:scale-[0.97];
+  }
+
+  .input-base {
+    @apply w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-ink-900;
+    @apply border-slate-300 placeholder:text-slate-400;
+    @apply transition-colors duration-150;
+    @apply dark:bg-ink-800 dark:text-slate-100 dark:border-ink-600 dark:placeholder:text-slate-500;
+    @apply focus:border-drop-500;
+  }
+
+  .input-error {
+    @apply border-rose-400 focus:border-rose-500 dark:border-rose-500;
+  }
+
+  /* Skeleton shimmer — a moving highlight band over a static base tone. */
+  .skeleton {
+    @apply relative overflow-hidden bg-slate-200 dark:bg-ink-700 rounded-lg;
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+  }
+
+  :is(.dark) .skeleton::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.08),
+      transparent
+    );
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium;
+  }
+
+  .prose-drop {
+    @apply text-sm leading-relaxed text-ink-800 dark:text-slate-200;
+  }
+
+  .prose-drop :is(h1, h2, h3, h4) {
+    @apply font-semibold text-ink-900 dark:text-white mt-4 mb-2 first:mt-0;
+  }
+
+  .prose-drop h1 { @apply text-xl; }
+  .prose-drop h2 { @apply text-lg; }
+  .prose-drop h3 { @apply text-base; }
+  .prose-drop h4 { @apply text-sm; }
+
+  .prose-drop p {
+    @apply mb-3 last:mb-0;
+  }
+
+  .prose-drop a {
+    @apply text-drop-600 dark:text-drop-400 underline decoration-drop-400/40 underline-offset-2 hover:decoration-drop-400;
+  }
+
+  .prose-drop code {
+    @apply rounded bg-slate-100 dark:bg-ink-800 px-1.5 py-0.5 font-mono text-[0.85em] text-rose-600 dark:text-rose-300;
+  }
+
+  .prose-drop blockquote {
+    @apply border-l-2 border-drop-400/50 pl-3 italic text-ink-600 dark:text-slate-400 my-3;
+  }
+
+  .prose-drop ul {
+    @apply list-disc pl-5 mb-3 space-y-1;
+  }
+
+  .prose-drop ol {
+    @apply list-decimal pl-5 mb-3 space-y-1;
+  }
+
+  .prose-drop hr {
+    @apply border-slate-200 dark:border-ink-700 my-4;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Lets a long unbroken token (a URL, a hash) wrap instead of overflowing a
+     card on mobile — the spec asks for a mobile-first layout. */
+  .break-anywhere {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Respect the OS reduced-motion setting: every custom keyframe collapses to an
+   instant state change. This is the one rule no Tailwind utility covers. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
