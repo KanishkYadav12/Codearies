@@ -1,0 +1,8 @@
+DevDrops - Loom Video Explanation
+==================================
+
+A short walkthrough explaining the approach, architecture, and key features
+of the DevDrops project (spaced repetition, auto-categorisation, and the
+technical constraints followed while building it).
+
+Watch here: https://www.loom.com/share/840e112578dc4499ad53bcda3a69269c
